@@ -1,0 +1,27 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Nuxt build and generated files
+.nuxt/
+dist/
+output/
+
+# Editor and OS files
+*.swp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
