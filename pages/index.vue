@@ -54,10 +54,16 @@ const previousCharacter = () => {
         <div v-if="loading" class="loading">Loading...</div>
 
         <div v-else-if="currentCharacter" class="character-details">
-            <div class="id-number">
-                <p class="id-number-text">{{ currentCharacter.id }}</p>
+            <div class="image-area">
+                <img
+                    :src="currentCharacter.image"
+                    :alt="currentCharacter.name"
+                    class="card-img"
+                />
+                <div class="id-number">
+                    <p class="id-number-text">{{ currentCharacter.id }}</p>
+                </div>
             </div>
-            <img :src="currentCharacter.image" :alt="currentCharacter.name" />
             <div class="character-main">
                 <p class="character-name">{{ currentCharacter.name }}</p>
             </div>
@@ -105,25 +111,37 @@ const previousCharacter = () => {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    .id-number {
-        margin: 0 auto;
-        width: 45px;
-        height: 45px;
-        background-color: mediumspringgreen;
-        border-radius: 50%;
+    .image-area {
+        width: 100%;
+        height: 300px;
         display: flex;
-        align-items: center;
         justify-content: center;
-        .id-number-text {
-            text-align: center;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 26px;
+        align-items: center;
+        position: relative;
+        padding-bottom: 20px;
+        .id-number {
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0 auto;
+            width: 45px;
+            height: 45px;
+            background-color: mediumspringgreen;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .id-number-text {
+                text-align: center;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 26px;
+            }
         }
-    }
-    .character-details img {
-        max-width: 700px;
-        border-radius: 10px;
-        margin: 20px 0;
+        .card-img {
+            position: relative;
+            width: 300px;
+            border-radius: 15px;
+        }
     }
     .character-main {
         width: 100%;
