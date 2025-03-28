@@ -107,55 +107,54 @@ onMounted(() => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-}
+    .status-filter {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .character-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 3fr);
+        grid-template-rows: repeat(3, 3fr);
+        gap: 20px;
+    }
 
-.status-filter {
-    margin-bottom: 20px;
-    text-align: center;
-}
+    .character-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        text-align: center;
+    }
 
-.character-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-}
+    .character-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
 
-.character-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    text-align: center;
-}
+    .character-details {
+        padding: 10px;
+    }
 
-.character-image {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-}
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
 
-.character-details {
-    padding: 10px;
-}
+    button {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
 
-.pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+    button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
 }
 </style>

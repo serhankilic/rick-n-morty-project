@@ -1,200 +1,229 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
-// Reactive state değişkenleri
 const characters = ref([])
-const currentCharacter = ref(null)
-const currentCharacterId = ref(1)
 const loading = ref(true)
-const totalCharacters = ref(826) // API'den gelen toplam karakter sayısı
+const statusFilter = ref('All')
+const currentPage = ref(1)
+const totalPages = ref(1)
 
-// Karakter çekme fonksiyonu
-const fetchCharacter = async (id) => {
-    loading.value = true // yukleniyor kismi
+// Filtre seçenekleri
+const statusOptions = ['All', 'Alive', 'Dead', 'unknown']
+
+// Tüm karakterleri çekme fonksiyonu
+const fetchCharacters = async () => {
+    loading.value = true
     try {
-        const response = await fetch(
-            `https://rickandmortyapi.com/api/character/${id}`
-        )
+        // Status parametresini API çağrısına ekle
+        const statusParam =
+            statusFilter.value === 'All'
+                ? ''
+                : `status=${statusFilter.value.toLowerCase()}`
+
+        const url = statusParam
+            ? `https://rickandmortyapi.com/api/character?page=${currentPage.value}&${statusParam}`
+            : `https://rickandmortyapi.com/api/character?page=${currentPage.value}`
+
+        const response = await fetch(url)
         const data = await response.json()
-        currentCharacter.value = data
-        currentCharacterId.value = id
+        characters.value = data.results
+        totalPages.value = data.info.pages // Toplam sayfa sayısını al
     } catch (error) {
-        // hata alirsa
         console.error('Veri çekme hatası:', error)
     } finally {
-        // yukleme durur
         loading.value = false
     }
 }
 
-// loading first character (rickkkk)
-onMounted(() => {
-    fetchCharacter(1)
+// Sayfa numaralarını hesapla
+const pageNumbers = computed(() => {
+    const range = 2
+    let pages = []
+
+    // 1 ve son sayfayı her zaman ekle
+    pages.push(1)
+    if (totalPages.value > 1) pages.push(totalPages.value)
+
+    // Mevcut sayfanın etrafındaki sayfaları ekle
+    for (
+        let i = Math.max(2, currentPage.value - range);
+        i <= Math.min(totalPages.value - 1, currentPage.value + range);
+        i++
+    ) {
+        if (!pages.includes(i)) pages.push(i)
+    }
+
+    return pages.sort((a, b) => a - b)
 })
 
-// next button
-const nextCharacter = () => {
-    if (currentCharacterId.value < totalCharacters.value) {
-        // karakterin sonuna kadar gider, sonundayken ilerlemez.
-        fetchCharacter(currentCharacterId.value + 1)
+// Belirli bir sayfaya gitme fonksiyonu
+const goToPage = (page) => {
+    currentPage.value = page
+    fetchCharacters()
+}
+
+// Sayfa değişikliği fonksiyonları
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++
+        fetchCharacters()
     }
 }
 
-// back button
-const previousCharacter = () => {
-    if (currentCharacterId.value > 1) {
-        // 1'e kadar geri gider, 1'de durur.
-        fetchCharacter(currentCharacterId.value - 1)
+const prevPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--
+        fetchCharacters()
     }
 }
+
+// Status veya sayfa değiştiğinde karakterleri yeniden çek
+watch([statusFilter, currentPage], () => {
+    fetchCharacters()
+})
+
+// Komponenet yüklendiğinde karakterleri çek
+onMounted(() => {
+    fetchCharacters()
+})
 </script>
 
 <template>
     <div class="character-container">
-        <div v-if="loading" class="loading">Loading...</div>
+        <!-- Filtre Seçimi -->
+        <div class="status-filter">
+            <select v-model="statusFilter">
+                <option
+                    v-for="status in statusOptions"
+                    :key="status"
+                    :value="status"
+                >
+                    {{ status }}
+                </option>
+            </select>
+        </div>
 
-        <div v-else-if="currentCharacter" class="character-details">
-            <div class="image-area">
+        <!-- Karakter Listesi -->
+        <div v-if="loading" class="loading">Yükleniyor...</div>
+        <div v-else class="character-grid">
+            <div
+                v-for="character in characters"
+                :key="character.id"
+                class="character-card"
+            >
                 <img
-                    :src="currentCharacter.image"
-                    :alt="currentCharacter.name"
-                    class="card-img"
+                    :src="character.image"
+                    :alt="character.name"
+                    class="character-image"
                 />
-                <div class="id-number">
-                    <p class="id-number-text">{{ currentCharacter.id }}</p>
+                <div class="character-details">
+                    <h3>{{ character.name }}</h3>
+                    <p>Status: {{ character.status }}</p>
+                    <p>Species: {{ character.species }}</p>
                 </div>
-            </div>
-            <div class="character-main">
-                <p class="character-name">{{ currentCharacter.name }}</p>
-            </div>
-            <div class="character-info">
-                <p>Status: {{ currentCharacter.status }}</p>
-                <p>Species: {{ currentCharacter.species }}</p>
-                <p>Gender: {{ currentCharacter.gender }}</p>
-                <p>Origin: {{ currentCharacter.origin.name }}</p>
-                <p>Location: {{ currentCharacter.location.name }}</p>
             </div>
         </div>
 
-        <div class="navigation-buttons">
-            <label for="previous-button">
-                <button
-                    @click="previousCharacter"
-                    :disabled="currentCharacterId === 1"
-                    id="previous-button"
-                >
-                    Önceki
-                </button>
-            </label>
+        <!-- Sayfalama Kontrolleri -->
+        <div class="pagination">
+            <button @click="prevPage" :disabled="currentPage === 1">
+                Önceki
+            </button>
 
-            <label for="next-button">
-                <button
-                    @click="nextCharacter"
-                    :disabled="currentCharacterId === totalCharacters"
-                    id="next-button"
-                >
-                    Sonraki
-                </button>
-            </label>
+            <div class="page-numbers">
+                <template v-for="(page, index) in pageNumbers" :key="page">
+                    <!-- Sayfalar arasına ... koy -->
+                    <span
+                        v-if="index > 0 && page - pageNumbers[index - 1] > 1"
+                        class="dots"
+                        >...</span
+                    >
+
+                    <button
+                        @click="goToPage(page)"
+                        :class="{ active: page === currentPage }"
+                    >
+                        {{ page }}
+                    </button>
+                </template>
+            </div>
+
+            <button @click="nextPage" :disabled="currentPage === totalPages">
+                Sonraki
+            </button>
         </div>
     </div>
 </template>
 
-<style>
+<style scoped>
 .character-container {
-    width: 100vw;
-    height: 100vh;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 20px;
+}
+
+.status-filter {
+    margin-bottom: 20px;
     text-align: center;
-    position: relative;
+}
+
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.character-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.character-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.character-details {
+    padding: 10px;
+}
+
+.pagination {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    .image-area {
-        width: 100%;
-        height: 300px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        padding-bottom: 20px;
-        .id-number {
-            position: absolute;
-            top: 0;
-            left: 0;
-            margin: 0 auto;
-            width: 45px;
-            height: 45px;
-            background-color: mediumspringgreen;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            .id-number-text {
-                text-align: center;
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 26px;
-            }
-        }
-        .card-img {
-            position: relative;
-            width: 300px;
-            border-radius: 15px;
-        }
-    }
-    .character-main {
-        width: 100%;
-        margin-bottom: 20px;
-        display: flex;
-        flex-direction: row;
-        column-gap: 50px;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        .character-name {
-            font-size: 32px;
-            font-weight: bold;
-            position: relative;
-            text-align: center;
-        }
-    }
+    gap: 10px;
+    margin-top: 20px;
+}
 
-    .character-info {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        row-gap: 10px;
-        width: 100%;
-        height: 100%;
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-        p {
-            font-size: 20px;
-            font-weight: 500;
-            font-family: 'SF Pro Display', serif;
-        }
-    }
-    .navigation-buttons {
-        width: 500px;
-        margin: 20px auto 0;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        button {
-            font-size: 20px;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+.page-numbers button {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        button:disabled {
-            background-color: lightgray;
-            cursor: not-allowed;
-            color: black;
-        }
-    }
+.page-numbers button.active {
+    background-color: #4caf50;
+    color: white;
+}
+
+.page-numbers .dots {
+    margin: 0 5px;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
 }
 </style>
