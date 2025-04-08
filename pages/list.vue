@@ -7,6 +7,10 @@ const loading = ref(true)
 const statusFilter = ref('All')
 const currentPage = ref(1)
 
+import Modal from '/components/Modal.vue'
+
+const showModal = ref(false)
+
 // Filtre seçenekleri
 const statusOptions = ['All', 'Alive', 'Dead', 'unknown']
 
@@ -87,6 +91,15 @@ onMounted(() => {
                     <h3>{{ character.name }}</h3>
                     <p>Status: {{ character.status }}</p>
                     <p>Species: {{ character.species }}</p>
+                    <button @click="showModal = true">Modal Aç</button>
+
+                    <Modal v-if="showModal" @close="showModal = false">
+                        <h2>Modal deneme</h2>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipisicing
+                            elit. Quidem, rerum..
+                        </p>
+                    </Modal>
                 </div>
             </div>
         </div>
@@ -102,7 +115,7 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
+<style>
 .character-container {
     max-width: 1200px;
     margin: 0 auto;
