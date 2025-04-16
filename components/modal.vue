@@ -30,9 +30,6 @@ const props = defineProps({
 
 // character özelliğine kısa erişim için değişken oluşturuyoruz
 const { character } = props
-
-// Konsola karakter bilgisini yazdırıyoruz
-console.log('Modal bileşeni içinde karakter:', character)
 </script>
 
 <style scoped>

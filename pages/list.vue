@@ -65,10 +65,17 @@ const prevPage = () => {
 
 // Karakter butonuna tıklandığında çalışacak fonksiyon
 const openModal = (character) => {
-    // Seçilen karakteri state'e kaydet
-    selectedCharacter.value = character
-    // Modalı göster
-    showModal.value = true
+    if (character) {
+        console.log('karakter gonderildi modal aciliyor')
+        // Seçilen karakteri state'e kaydet
+        selectedCharacter.value = character
+        // Modalı göster
+        showModal.value = true
+    } else {
+        console.log('karakter gonderilmedi, modal kapaniyor')
+        selectedCharacter.value = null
+        showModal.value = false
+    }
 }
 
 // Favori işlemleri
@@ -113,8 +120,8 @@ const loadFavorites = () => {
     }
 }
 
-onMounted(() => {
-    fetchCharacters()
+onMounted(async () => {
+    await fetchCharacters()
     loadFavorites()
 })
 </script>
@@ -187,7 +194,7 @@ onMounted(() => {
                         style="font-size: 2rem; color: red"
                     />
                     <Icon
-                        v-else="isFavorite(character.id)"
+                        v-else
                         name="icon-park-outline:like"
                         style="font-size: 2rem; color: gray"
                     />
@@ -202,13 +209,11 @@ onMounted(() => {
                     <h3>{{ character.name }}</h3>
                     <p>Status: {{ character.status }}</p>
                     <p>Species: {{ character.species }}</p>
-                    <!-- Butona tıklandığında karakter bilgisini geçerek openModal çağrılır -->
-                    <button @click="openModal(character)">Modal Aç</button>
-
+                    <button @click="openModal(character)">Modali Ac</button>
                     <!-- Eğer showModal true ise modalı göster ve character prop'unu geçir -->
                     <Modal
                         v-if="showModal"
-                        @close="showModal = false"
+                        @close="openModal()"
                         :character="selectedCharacter"
                     />
                 </div>
